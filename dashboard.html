@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>업무 대시보드 - 통계 및 분석</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>업무 대시보드</h1>
+            <p class="date" id="currentDate"></p>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">← 업무 관리로 돌아가기</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- 요약 통계 카드 -->
+            <section class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">📊</div>
+                    <h3>전체 업무</h3>
+                    <p class="card-value" id="totalTasksCard">0</p>
+                </div>
+                <div class="summary-card success">
+                    <div class="card-icon">✅</div>
+                    <h3>완료율</h3>
+                    <p class="card-value"><span id="completionRate">0</span>%</p>
+                </div>
+                <div class="summary-card warning">
+                    <div class="card-icon">⏰</div>
+                    <h3>진행중</h3>
+                    <p class="card-value" id="activeTasks">0</p>
+                </div>
+                <div class="summary-card info">
+                    <div class="card-icon">📈</div>
+                    <h3>일일 평균</h3>
+                    <p class="card-value" id="dailyAverage">0</p>
+                </div>
+            </section>
+
+            <!-- 차트 섹션 -->
+            <section class="charts-grid">
+                <!-- 우선순위별 분포 도넛 차트 -->
+                <div class="chart-container">
+                    <h3>우선순위별 업무 분포</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="priorityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 일별 업무 추세 라인 차트 -->
+                <div class="chart-container wide">
+                    <h3>최근 7일 업무 추세</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 시간대별 생산성 막대 차트 -->
+                <div class="chart-container">
+                    <h3>시간대별 업무 생성</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 완료 상태 분포 -->
+                <div class="chart-container">
+                    <h3>업무 상태 분포</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 상세 통계 테이블 -->
+            <section class="statistics-section">
+                <h2>상세 통계</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <h4>우선순위별 완료율</h4>
+                        <div id="priorityStats" class="stat-content"></div>
+                    </div>
+                    <div class="stat-item">
+                        <h4>최근 활동</h4>
+                        <div id="recentActivity" class="stat-content"></div>
+                    </div>
+                    <div class="stat-item">
+                        <h4>생산성 지표</h4>
+                        <div id="productivityMetrics" class="stat-content"></div>
+                    </div>
+                    <div class="stat-item">
+                        <h4>업무 처리 시간</h4>
+                        <div id="processingTime" class="stat-content"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

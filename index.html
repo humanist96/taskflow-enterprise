@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 업무 관리</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>오늘의 업무 관리</h1>
+            <p class="date" id="currentDate"></p>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-link">📊 대시보드 보기</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="task-input-section">
+                <h2>새 업무 추가</h2>
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="업무 내용을 입력하세요..." />
+                    <select id="prioritySelect">
+                        <option value="low">낮음</option>
+                        <option value="medium" selected>보통</option>
+                        <option value="high">높음</option>
+                    </select>
+                    <button id="addTaskBtn">추가</button>
+                </div>
+            </div>
+
+            <div class="task-stats">
+                <div class="stat">
+                    <span class="stat-label">전체 업무</span>
+                    <span class="stat-value" id="totalTasks">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">완료된 업무</span>
+                    <span class="stat-value" id="completedTasks">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">남은 업무</span>
+                    <span class="stat-value" id="remainingTasks">0</span>
+                </div>
+            </div>
+
+            <div class="task-list-section">
+                <h2>업무 목록</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">전체</button>
+                    <button class="filter-btn" data-filter="active">진행중</button>
+                    <button class="filter-btn" data-filter="completed">완료</button>
+                </div>
+                <ul id="taskList" class="task-list"></ul>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
