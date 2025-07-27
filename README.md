@@ -1,15 +1,23 @@
-# TaskFlow Pro - Enterprise Task Management System
+# TaskFlow Enterprise - Professional Task Management Platform
 
-SQLite 데이터베이스를 활용한 전문적인 업무 관리 시스템입니다.
+전문가를 위한 엔터프라이즈급 업무 관리 플랫폼입니다. 팀 협업, 실시간 대시보드, 고급 분석 기능을 제공합니다.
+
+🚀 **데모**: [Vercel에 배포 후 URL]
 
 ## 🚀 주요 기능
 
-### 데이터베이스 기능
-- **SQLite 영구 저장소**: 모든 데이터를 안전하게 저장
-- **사용자 인증**: 회원가입/로그인으로 개인 데이터 보호
-- **다중 사용자 지원**: 각 사용자별 독립된 업무 관리
-- **세션 관리**: 안전한 로그인 상태 유지
-- **데이터 백업**: 자동 백업 및 복원 기능
+### 🏢 엔터프라이즈 기능
+- **팀 협업**: 팀 생성, 멤버 초대, 업무 할당
+- **실시간 대시보드**: Chart.js 기반 시각화
+- **댓글 시스템**: 업무별 실시간 소통
+- **활동 로그**: 모든 변경사항 추적
+- **PWA 지원**: 모바일 앱처럼 설치 가능
+
+### 💾 데이터베이스 기능
+- **이중 DB 지원**: SQLite(개발) / PostgreSQL(프로덕션)
+- **사용자 인증**: 안전한 bcrypt 암호화
+- **세션 관리**: Express-session 기반
+- **자동 마이그레이션**: 스키마 자동 적용
 
 ### 업무 관리 기능
 - **CRUD 작업**: 생성, 읽기, 수정, 삭제
@@ -51,7 +59,7 @@ npm run dev
 ```
 
 ### 4. 접속
-브라우저에서 `http://localhost:3000/index-db.html` 접속
+브라우저에서 `http://localhost:3000` 접속 (자동으로 index-enterprise.html로 리다이렉트)
 
 ## 🗂️ 프로젝트 구조
 
@@ -122,10 +130,58 @@ npm run backup
 ### 데이터 내보내기
 웹 인터페이스에서 "내보내기" 버튼 클릭하여 JSON 형식으로 다운로드
 
+## 🚀 Vercel 배포
+
+### 빠른 배포 (Windows)
+```bash
+deploy.bat
+```
+
+### 빠른 배포 (Mac/Linux)
+```bash
+sh deploy.sh
+```
+
+### 수동 배포
+1. GitHub에 코드 푸시
+2. https://vercel.com/new 에서 리포지토리 연결
+3. 환경 변수 설정 (DATABASE_URL, SESSION_SECRET)
+4. Deploy 클릭
+
+자세한 내용은 [VERCEL_DEPLOY_GUIDE.md](VERCEL_DEPLOY_GUIDE.md) 참조
+
+## 🔧 환경 변수
+
+`.env` 파일 생성:
+```env
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+SESSION_SECRET=your-secret-key-here
+NODE_ENV=production
+PORT=3000
+```
+
 ## 🚦 개발 팁
 - 개발 시 `nodemon`으로 자동 재시작
 - 로그는 Morgan으로 확인
-- 데이터베이스는 `database/taskflow.db`에 저장
+- 로컬 개발: SQLite 사용
+- 프로덕션: PostgreSQL 사용
+
+## 📱 PWA 기능
+- 오프라인 작동 (Service Worker)
+- 홈 화면에 추가
+- 푸시 알림 (준비 중)
+- 백그라운드 동기화 (준비 중)
+
+## 🔮 향후 계획
+- [ ] WebSocket 실시간 협업
+- [ ] AI 기반 업무 추천
+- [ ] 2FA 인증
+- [ ] 다국어 지원
+- [ ] 파일 첨부 기능
+- [ ] 캘린더 뷰
 
 ## 📝 라이선스
 MIT License
+
+## 🤝 기여하기
+PR과 이슈는 언제나 환영합니다!
