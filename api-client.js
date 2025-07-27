@@ -1,7 +1,8 @@
 // API Client for TaskFlow Pro
 class APIClient {
     constructor() {
-        this.baseURL = 'http://localhost:3000/api';
+        // Use relative URL for production
+        this.baseURL = '/api';
         this.token = null;
         this.user = null;
     }
@@ -72,6 +73,10 @@ class APIClient {
         return await this.request(`/tasks${queryParams ? '?' + queryParams : ''}`);
     }
 
+    async getTask(taskId) {
+        return await this.request(`/tasks/${taskId}`);
+    }
+
     async createTask(taskData) {
         return await this.request('/tasks', {
             method: 'POST',
@@ -89,6 +94,57 @@ class APIClient {
     async deleteTask(taskId) {
         return await this.request(`/tasks/${taskId}`, {
             method: 'DELETE'
+        });
+    }
+
+    // Team Collaboration APIs
+    async getTeams() {
+        return this.request('/teams');
+    }
+
+    async createTeam(teamData) {
+        return this.request('/teams', {
+            method: 'POST',
+            body: JSON.stringify(teamData)
+        });
+    }
+
+    async getTeamMembers(teamId) {
+        return this.request(`/teams/${teamId}/members`);
+    }
+
+    async inviteTeamMember(teamId, memberData) {
+        return this.request(`/teams/${teamId}/invite`, {
+            method: 'POST',
+            body: JSON.stringify(memberData)
+        });
+    }
+
+    async assignTask(taskId, userId) {
+        return this.request(`/tasks/${taskId}/assign`, {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId })
+        });
+    }
+
+    async getTaskComments(taskId) {
+        return this.request(`/tasks/${taskId}/comments`);
+    }
+
+    async addTaskComment(taskId, commentData) {
+        return this.request(`/tasks/${taskId}/comments`, {
+            method: 'POST',
+            body: JSON.stringify(commentData)
+        });
+    }
+
+    async uploadTaskAttachment(formData) {
+        return this.request('/tasks/attachments', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                // Don't set Content-Type for FormData
+            }
         });
     }
 

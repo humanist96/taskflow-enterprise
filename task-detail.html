@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>업무 상세 - TaskFlow Enterprise</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles-enterprise.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="modal-backdrop" style="display: flex;">
+        <div class="modal-content animate-scaleIn" style="max-width: 900px; height: 90vh;">
+            <div class="modal-header">
+                <h2 id="taskDetailTitle">업무 상세</h2>
+                <button class="btn-enterprise btn-ghost" onclick="closeTaskDetail()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body" style="display: flex; gap: var(--space-6); overflow-y: auto;">
+                <!-- Left Column - Task Details -->
+                <div style="flex: 1.5;">
+                    <div class="task-detail-section">
+                        <div class="form-group">
+                            <label class="form-label">업무 제목</label>
+                            <input type="text" class="form-input" id="detailTaskTitle" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">설명</label>
+                            <textarea class="form-input" id="detailTaskDescription" rows="4" readonly></textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">상태</label>
+                                <select class="form-input" id="detailTaskStatus" disabled>
+                                    <option value="pending">대기</option>
+                                    <option value="in_progress">진행중</option>
+                                    <option value="completed">완료</option>
+                                    <option value="archived">보관</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">우선순위</label>
+                                <select class="form-input" id="detailTaskPriority" disabled>
+                                    <option value="low">낮음</option>
+                                    <option value="medium">보통</option>
+                                    <option value="high">높음</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">카테고리</label>
+                                <select class="form-input" id="detailTaskCategory" disabled>
+                                    <option value="">선택하세요</option>
+                                    <option value="development">개발</option>
+                                    <option value="design">디자인</option>
+                                    <option value="marketing">마케팅</option>
+                                    <option value="support">지원</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">마감일</label>
+                                <input type="datetime-local" class="form-input" id="detailTaskDueDate" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">담당자</label>
+                            <div id="taskAssignees" class="assignees-container">
+                                <!-- Assignees will be populated here -->
+                            </div>
+                            <button class="btn-enterprise btn-secondary btn-sm" onclick="showAssignModal()">
+                                <i class="fas fa-user-plus"></i>
+                                담당자 추가
+                            </button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">태그</label>
+                            <div id="taskTags" class="tags-container">
+                                <!-- Tags will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column - Collaboration -->
+                <div style="flex: 1;">
+                    <!-- Comments Section -->
+                    <div class="comments-section">
+                        <div class="comments-header">
+                            <h3>댓글</h3>
+                            <span class="comment-count" id="commentCount">0</span>
+                        </div>
+                        
+                        <div id="taskComments" class="comments-list">
+                            <!-- Comments will be loaded here -->
+                        </div>
+                        
+                        <div class="comment-input">
+                            <textarea class="form-input" id="newComment" placeholder="댓글을 입력하세요..." rows="3"></textarea>
+                            <button class="btn-enterprise btn-primary" onclick="addComment()">
+                                <i class="fas fa-paper-plane"></i>
+                                댓글 달기
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Attachments Section -->
+                    <div class="attachments-section">
+                        <div class="section-header">
+                            <h3>첨부파일</h3>
+                            <button class="btn-enterprise btn-ghost btn-sm" onclick="uploadAttachment()">
+                                <i class="fas fa-paperclip"></i>
+                                파일 첨부
+                            </button>
+                        </div>
+                        
+                        <div id="taskAttachments" class="attachments-list">
+                            <!-- Attachments will be loaded here -->
+                            <p style="text-align: center; color: var(--gray-500); padding: var(--space-4);">
+                                첨부된 파일이 없습니다
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity Log -->
+                    <div class="activity-section">
+                        <h3>활동 로그</h3>
+                        <div id="activityLog" class="activity-list">
+                            <!-- Activity logs will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-enterprise btn-secondary" onclick="closeTaskDetail()">
+                    닫기
+                </button>
+                <button class="btn-enterprise btn-primary" id="editTaskBtn" onclick="enableEditMode()">
+                    <i class="fas fa-edit"></i>
+                    수정
+                </button>
+                <button class="btn-enterprise btn-success" id="saveTaskBtn" onclick="saveTaskChanges()" style="display: none;">
+                    <i class="fas fa-save"></i>
+                    저장
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Task Detail Management
+    let currentTaskId = null;
+    let editMode = false;
+
+    function showTaskDetail(taskId) {
+        currentTaskId = taskId;
+        loadTaskDetails();
+        loadTaskComments();
+        document.querySelector('.modal-backdrop').style.display = 'flex';
+    }
+
+    async function loadTaskDetails() {
+        try {
+            const task = await apiClient.getTask(currentTaskId);
+            
+            // Populate fields
+            document.getElementById('detailTaskTitle').value = task.title;
+            document.getElementById('detailTaskDescription').value = task.description || '';
+            document.getElementById('detailTaskStatus').value = task.status;
+            document.getElementById('detailTaskPriority').value = task.priority;
+            document.getElementById('detailTaskCategory').value = task.category_id || '';
+            document.getElementById('detailTaskDueDate').value = task.due_date || '';
+            
+            // Load assignees
+            loadAssignees(task.assignees || []);
+            
+            // Load tags
+            loadTags(task.tags || []);
+            
+        } catch (error) {
+            app.showNotification('업무 정보를 불러올 수 없습니다', 'error');
+        }
+    }
+
+    async function loadTaskComments() {
+        try {
+            const comments = await collaboration.loadTaskComments(currentTaskId);
+            document.getElementById('commentCount').textContent = comments ? comments.length : 0;
+        } catch (error) {
+            console.error('Failed to load comments:', error);
+        }
+    }
+
+    function loadAssignees(assignees) {
+        const container = document.getElementById('taskAssignees');
+        container.innerHTML = assignees.map(user => `
+            <div class="task-assignee">
+                <div class="assignee-avatar">
+                    ${collaboration.getInitials(user.username)}
+                </div>
+                <span>${user.username}</span>
+                ${editMode ? `<button class="btn-remove" onclick="removeAssignee(${user.id})">×</button>` : ''}
+            </div>
+        `).join('');
+    }
+
+    function loadTags(tags) {
+        const container = document.getElementById('taskTags');
+        container.innerHTML = tags.map(tag => `
+            <span class="tag-badge">
+                ${tag}
+                ${editMode ? `<button class="btn-remove" onclick="removeTag('${tag}')">×</button>` : ''}
+            </span>
+        `).join('');
+    }
+
+    function enableEditMode() {
+        editMode = true;
+        
+        // Enable form fields
+        document.getElementById('detailTaskTitle').readOnly = false;
+        document.getElementById('detailTaskDescription').readOnly = false;
+        document.getElementById('detailTaskStatus').disabled = false;
+        document.getElementById('detailTaskPriority').disabled = false;
+        document.getElementById('detailTaskCategory').disabled = false;
+        document.getElementById('detailTaskDueDate').readOnly = false;
+        
+        // Toggle buttons
+        document.getElementById('editTaskBtn').style.display = 'none';
+        document.getElementById('saveTaskBtn').style.display = 'block';
+        
+        // Reload assignees and tags with edit controls
+        loadTaskDetails();
+    }
+
+    async function saveTaskChanges() {
+        const updates = {
+            title: document.getElementById('detailTaskTitle').value,
+            description: document.getElementById('detailTaskDescription').value,
+            status: document.getElementById('detailTaskStatus').value,
+            priority: document.getElementById('detailTaskPriority').value,
+            category_id: document.getElementById('detailTaskCategory').value || null,
+            due_date: document.getElementById('detailTaskDueDate').value || null
+        };
+        
+        try {
+            await apiClient.updateTask(currentTaskId, updates);
+            app.showNotification('업무가 수정되었습니다', 'success');
+            
+            // Exit edit mode
+            editMode = false;
+            document.getElementById('editTaskBtn').style.display = 'block';
+            document.getElementById('saveTaskBtn').style.display = 'none';
+            
+            // Disable form fields
+            document.getElementById('detailTaskTitle').readOnly = true;
+            document.getElementById('detailTaskDescription').readOnly = true;
+            document.getElementById('detailTaskStatus').disabled = true;
+            document.getElementById('detailTaskPriority').disabled = true;
+            document.getElementById('detailTaskCategory').disabled = true;
+            document.getElementById('detailTaskDueDate').readOnly = true;
+            
+            // Reload main dashboard
+            if (window.app) {
+                window.app.loadDashboard();
+            }
+        } catch (error) {
+            app.showNotification('업무 수정 실패: ' + error.message, 'error');
+        }
+    }
+
+    async function addComment() {
+        const content = document.getElementById('newComment').value.trim();
+        if (!content) return;
+        
+        try {
+            await collaboration.addComment(currentTaskId, content);
+            document.getElementById('newComment').value = '';
+            loadTaskComments();
+        } catch (error) {
+            app.showNotification('댓글 추가 실패', 'error');
+        }
+    }
+
+    function showAssignModal() {
+        // Implementation for assign modal
+        app.showNotification('담당자 추가 기능은 준비 중입니다', 'info');
+    }
+
+    function uploadAttachment() {
+        // Implementation for file upload
+        app.showNotification('파일 첨부 기능은 준비 중입니다', 'info');
+    }
+
+    function closeTaskDetail() {
+        // If in iframe, remove the iframe
+        if (window.parent !== window && window.parent.currentDetailFrame) {
+            window.parent.currentDetailFrame.remove();
+            window.parent.currentDetailFrame = null;
+        } else {
+            document.querySelector('.modal-backdrop').style.display = 'none';
+        }
+        currentTaskId = null;
+        editMode = false;
+    }
+
+    // Make functions globally available
+    window.showTaskDetail = showTaskDetail;
+    window.closeTaskDetail = closeTaskDetail;
+    window.enableEditMode = enableEditMode;
+    window.saveTaskChanges = saveTaskChanges;
+    window.addComment = addComment;
+    window.showAssignModal = showAssignModal;
+    window.uploadAttachment = uploadAttachment;
+    </script>
+
+    <style>
+    /* Task Detail Specific Styles */
+    .task-detail-section {
+        background: var(--gray-50);
+        padding: var(--space-6);
+        border-radius: var(--radius-xl);
+    }
+
+    .assignees-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+    }
+
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+
+    .tag-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-1) var(--space-3);
+        background: var(--primary-100);
+        color: var(--primary-700);
+        border-radius: var(--radius-full);
+        font-size: var(--text-sm);
+        font-weight: 500;
+    }
+
+    .btn-remove {
+        background: transparent;
+        border: none;
+        color: currentColor;
+        cursor: pointer;
+        font-size: var(--text-lg);
+        line-height: 1;
+        margin-left: var(--space-1);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-4);
+    }
+
+    .activity-section {
+        margin-top: var(--space-6);
+        padding-top: var(--space-6);
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .activity-item {
+        display: flex;
+        gap: var(--space-3);
+        font-size: var(--text-sm);
+        color: var(--gray-600);
+    }
+
+    .activity-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--gray-100);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .btn-success {
+        background: var(--success-main);
+        color: white;
+        border-color: var(--success-main);
+    }
+
+    .btn-success:hover {
+        background: var(--success-dark);
+        border-color: var(--success-dark);
+    }
+    </style>
+</body>
+</html>

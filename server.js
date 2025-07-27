@@ -175,6 +175,167 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
     );
 });
 
+// Team Collaboration Routes
+app.post('/api/teams', requireAuth, (req, res) => {
+    const { name, description } = req.body;
+    const owner_id = req.session.userId;
+
+    db.run(
+        'INSERT INTO teams (name, description, owner_id) VALUES (?, ?, ?)',
+        [name, description, owner_id],
+        function(err) {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            
+            const teamId = this.lastID;
+            
+            // Add owner as admin member
+            db.run(
+                'INSERT INTO team_members (team_id, user_id, role) VALUES (?, ?, ?)',
+                [teamId, owner_id, 'admin'],
+                (err) => {
+                    if (err) {
+                        return res.status(400).json({ error: err.message });
+                    }
+                    
+                    res.json({ id: teamId, name, description, owner_id });
+                }
+            );
+        }
+    );
+});
+
+app.get('/api/teams', requireAuth, (req, res) => {
+    db.all(
+        `SELECT t.*, tm.role FROM teams t
+         JOIN team_members tm ON t.id = tm.team_id
+         WHERE tm.user_id = ?`,
+        [req.session.userId],
+        (err, teams) => {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            res.json(teams);
+        }
+    );
+});
+
+app.get('/api/teams/:teamId/members', requireAuth, (req, res) => {
+    const { teamId } = req.params;
+    
+    db.all(
+        `SELECT u.id, u.username, u.email, tm.role, tm.joined_at
+         FROM team_members tm
+         JOIN users u ON tm.user_id = u.id
+         WHERE tm.team_id = ?`,
+        [teamId],
+        (err, members) => {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            res.json(members);
+        }
+    );
+});
+
+app.post('/api/teams/:teamId/invite', requireAuth, (req, res) => {
+    const { teamId } = req.params;
+    const { email, role = 'member' } = req.body;
+    
+    // Find user by email
+    db.get('SELECT id FROM users WHERE email = ?', [email], (err, user) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // Add to team
+        db.run(
+            'INSERT INTO team_members (team_id, user_id, role) VALUES (?, ?, ?)',
+            [teamId, user.id, role],
+            (err) => {
+                if (err) {
+                    return res.status(400).json({ error: err.message });
+                }
+                res.json({ message: 'User invited successfully' });
+            }
+        );
+    });
+});
+
+app.post('/api/tasks/:taskId/assign', requireAuth, (req, res) => {
+    const { taskId } = req.params;
+    const { user_id } = req.body;
+    
+    db.run(
+        'INSERT INTO task_assignments (task_id, user_id, assigned_by) VALUES (?, ?, ?)',
+        [taskId, user_id, req.session.userId],
+        (err) => {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            res.json({ message: 'Task assigned successfully' });
+        }
+    );
+});
+
+app.get('/api/tasks/:taskId/comments', requireAuth, (req, res) => {
+    const { taskId } = req.params;
+    
+    db.all(
+        `SELECT c.*, u.username
+         FROM task_comments c
+         JOIN users u ON c.user_id = u.id
+         WHERE c.task_id = ?
+         ORDER BY c.created_at DESC`,
+        [taskId],
+        (err, comments) => {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            res.json(comments);
+        }
+    );
+});
+
+app.post('/api/tasks/:taskId/comments', requireAuth, (req, res) => {
+    const { taskId } = req.params;
+    const { content } = req.body;
+    
+    db.run(
+        'INSERT INTO task_comments (task_id, user_id, content) VALUES (?, ?, ?)',
+        [taskId, req.session.userId, content],
+        function(err) {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            
+            // Get user info for response
+            db.get(
+                'SELECT username FROM users WHERE id = ?',
+                [req.session.userId],
+                (err, user) => {
+                    if (err) {
+                        return res.status(400).json({ error: err.message });
+                    }
+                    
+                    res.json({
+                        id: this.lastID,
+                        task_id: taskId,
+                        user_id: req.session.userId,
+                        username: user.username,
+                        content,
+                        created_at: new Date().toISOString()
+                    });
+                }
+            );
+        }
+    );
+});
+
 // Task routes
 app.get('/api/tasks', requireAuth, (req, res) => {
     const { status, category, priority, search } = req.query;
@@ -310,6 +471,39 @@ app.post('/api/tasks', requireAuth, (req, res) => {
         
         stmt.finalize();
     });
+});
+
+app.get('/api/tasks/:id', requireAuth, (req, res) => {
+    const { id } = req.params;
+    
+    db.get(
+        `SELECT t.*, c.name as category_name, c.icon as category_icon,
+                GROUP_CONCAT(DISTINCT tg.name) as tags,
+                GROUP_CONCAT(DISTINCT u.username) as assignees
+         FROM tasks t
+         LEFT JOIN categories c ON t.category_id = c.id
+         LEFT JOIN task_tags tt ON t.id = tt.task_id
+         LEFT JOIN tags tg ON tt.tag_id = tg.id
+         LEFT JOIN task_assignments ta ON t.id = ta.task_id
+         LEFT JOIN users u ON ta.user_id = u.id
+         WHERE t.id = ? AND t.user_id = ? AND t.is_deleted = 0
+         GROUP BY t.id`,
+        [id, req.session.userId],
+        (err, task) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (!task) {
+                return res.status(404).json({ error: 'Task not found' });
+            }
+            
+            // Parse tags and assignees
+            task.tags = task.tags ? task.tags.split(',') : [];
+            task.assignees = task.assignees ? task.assignees.split(',').map(username => ({ username })) : [];
+            
+            res.json(task);
+        }
+    );
 });
 
 app.put('/api/tasks/:id', requireAuth, (req, res) => {

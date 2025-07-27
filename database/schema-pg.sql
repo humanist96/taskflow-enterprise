@@ -2,6 +2,11 @@
 -- PostgreSQL Database for Task Management System
 
 -- Drop existing tables if they exist
+DROP TABLE IF EXISTS task_attachments CASCADE;
+DROP TABLE IF EXISTS task_comments CASCADE;
+DROP TABLE IF EXISTS task_assignments CASCADE;
+DROP TABLE IF EXISTS team_members CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
 DROP TABLE IF EXISTS task_tags CASCADE;
 DROP TABLE IF EXISTS activity_logs CASCADE;
 DROP TABLE IF EXISTS daily_statistics CASCADE;
@@ -119,6 +124,63 @@ CREATE INDEX idx_tags_name ON tags(name);
 CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id);
 CREATE INDEX idx_daily_statistics_user_date ON daily_statistics(user_id, date);
 
+-- Team collaboration tables
+CREATE TABLE teams (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    owner_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE team_members (
+    id SERIAL PRIMARY KEY,
+    team_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    role TEXT DEFAULT 'member',
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES teams(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    UNIQUE(team_id, user_id)
+);
+
+CREATE TABLE task_assignments (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    assigned_by INTEGER NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (assigned_by) REFERENCES users(id),
+    UNIQUE(task_id, user_id)
+);
+
+CREATE TABLE task_comments (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE task_attachments (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    filename TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    file_size INTEGER,
+    mime_type TEXT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 -- Create update trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -135,10 +197,15 @@ CREATE TRIGGER update_tasks_timestamp BEFORE UPDATE ON tasks
 CREATE TRIGGER update_users_timestamp BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_task_comments_timestamp BEFORE UPDATE ON task_comments
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Default categories
 INSERT INTO categories (id, name, icon, color) VALUES 
-(1, 'work', '💼', '#3b82f6'),
-(2, 'personal', '👤', '#10b981'),
-(3, 'project', '📁', '#8b5cf6'),
-(4, 'meeting', '🤝', '#f59e0b')
+(1, 'development', '💻', '#3b82f6'),
+(2, 'design', '🎨', '#10b981'),
+(3, 'marketing', '📢', '#f59e0b'),
+(4, 'support', '🎧', '#ef4444'),
+(5, 'management', '👥', '#8b5cf6'),
+(6, 'research', '🔬', '#6366f1')
 ON CONFLICT DO NOTHING;
