@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TaskFlow Enterprise - 전문가를 위한 업무 관리 솔루션">
+    <title>TaskFlow Enterprise - Professional Task Management</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles-enterprise.css">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Progressive Web App -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#5A63EA">
+</head>
+<body>
+    <!-- Professional Navigation -->
+    <nav class="nav-enterprise">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <div class="nav-brand-icon">TF</div>
+                <span>TaskFlow Enterprise</span>
+            </a>
+            
+            <div class="nav-menu">
+                <button class="btn-enterprise btn-ghost" onclick="openNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">3</span>
+                </button>
+                
+                <div class="user-menu">
+                    <button class="user-avatar" onclick="toggleUserMenu()">
+                        <img src="https://ui-avatars.com/api/?name=User&background=5A63EA&color=fff" alt="User" id="userAvatar">
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown" style="display: none;">
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user"></i> 프로필
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-cog"></i> 설정
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-globe"></i> 언어 설정
+                        </a>
+                        <hr class="dropdown-divider">
+                        <a href="#" class="dropdown-item" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> 로그아웃
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Application -->
+    <div class="app-container" id="mainApp">
+        <!-- Sidebar -->
+        <aside class="sidebar-enterprise">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">메인 메뉴</h3>
+                <nav class="sidebar-nav">
+                    <a href="#" class="sidebar-link active">
+                        <i class="fas fa-home"></i>
+                        <span>대시보드</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <i class="fas fa-tasks"></i>
+                        <span>업무 관리</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>프로젝트</span>
+                    </a>
+                    <a href="#" class="sidebar-link" onclick="showTeamView()">
+                        <i class="fas fa-users"></i>
+                        <span>팀 협업</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>분석 리포트</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">빠른 작업</h3>
+                <button class="btn-enterprise btn-primary" style="width: 100%;" onclick="openNewTaskModal()">
+                    <i class="fas fa-plus"></i>
+                    <span>새 업무 추가</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">대시보드</h1>
+                    <p class="page-subtitle">
+                        <span id="welcomeMessage">안녕하세요!</span> 
+                        오늘은 <span id="currentDate"></span>입니다.
+                    </p>
+                </div>
+                
+                <div class="page-actions">
+                    <button class="btn-enterprise btn-secondary">
+                        <i class="fas fa-download"></i>
+                        <span>리포트 다운로드</span>
+                    </button>
+                    <button class="btn-enterprise btn-primary" onclick="openNewTaskModal()">
+                        <i class="fas fa-plus"></i>
+                        <span>새 업무</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-title">총 업무</div>
+                            <div class="stat-value" id="totalTasksStat">0</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>12% 증가</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(90, 99, 234, 0.1); color: var(--primary-600);">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-title">완료율</div>
+                            <div class="stat-value" id="completionRateStat">0%</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>5% 개선</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success-main);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-title">팀 생산성</div>
+                            <div class="stat-value" id="productivityStat">85</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>최고 기록</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-main);">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-title">평균 처리 시간</div>
+                            <div class="stat-value">2.5h</div>
+                            <div class="stat-change negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>30분 단축</span>
+                            </div>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--info-main);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-row">
+                <div class="chart-container-enterprise" style="flex: 2;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">주간 업무 트렌드</h3>
+                        <div class="chart-actions">
+                            <button class="btn-enterprise btn-ghost btn-sm">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <canvas id="trendChart" height="300"></canvas>
+                </div>
+
+                <div class="chart-container-enterprise" style="flex: 1;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">카테고리별 분포</h3>
+                    </div>
+                    <canvas id="categoryChart" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Task List Section -->
+            <div class="card-enterprise">
+                <div class="card-header">
+                    <div class="flex-between">
+                        <h2>진행중인 업무</h2>
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">전체</button>
+                            <button class="filter-tab" data-filter="today">오늘</button>
+                            <button class="filter-tab" data-filter="week">이번 주</button>
+                            <button class="filter-tab" data-filter="urgent">긴급</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div id="taskList" class="task-list-enterprise">
+                        <!-- Tasks will be dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Task Modal -->
+    <div class="modal-backdrop" id="newTaskModal" style="display: none;">
+        <div class="modal-content animate-scaleIn">
+            <div class="modal-header">
+                <h2>새 업무 추가</h2>
+                <button class="btn-enterprise btn-ghost" onclick="closeNewTaskModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="newTaskForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">업무 제목 *</label>
+                        <input type="text" class="form-input" id="taskTitle" required placeholder="업무 제목을 입력하세요">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">설명</label>
+                        <textarea class="form-input" id="taskDescription" rows="3" placeholder="업무에 대한 상세 설명을 입력하세요"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">우선순위</label>
+                            <select class="form-input" id="taskPriority">
+                                <option value="low">낮음</option>
+                                <option value="medium" selected>보통</option>
+                                <option value="high">높음</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">카테고리</label>
+                            <select class="form-input" id="taskCategory">
+                                <option value="">선택하세요</option>
+                                <option value="development">개발</option>
+                                <option value="design">디자인</option>
+                                <option value="marketing">마케팅</option>
+                                <option value="support">지원</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">마감일</label>
+                            <input type="datetime-local" class="form-input" id="taskDueDate">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">담당자</label>
+                            <select class="form-input" id="taskAssignee">
+                                <option value="">나에게 할당</option>
+                                <option value="team1">팀원 1</option>
+                                <option value="team2">팀원 2</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">태그</label>
+                        <input type="text" class="form-input" id="taskTags" placeholder="태그를 입력하세요 (쉼표로 구분)">
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-enterprise btn-secondary" onclick="closeNewTaskModal()">
+                        취소
+                    </button>
+                    <button type="submit" class="btn-enterprise btn-primary">
+                        <i class="fas fa-plus"></i>
+                        업무 추가
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-backdrop" id="loginModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-body" style="padding: 3rem;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div class="nav-brand-icon" style="width: 64px; height: 64px; font-size: 2rem; margin: 0 auto 1rem;">TF</div>
+                    <h2>TaskFlow Enterprise</h2>
+                    <p style="color: var(--gray-600); margin-top: 0.5rem;">전문가를 위한 업무 관리 솔루션</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">이메일 또는 사용자명</label>
+                        <input type="text" class="form-input" id="loginUsername" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">비밀번호</label>
+                        <input type="password" class="form-input" id="loginPassword" required>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="rememberMe">
+                            <span style="font-size: var(--text-sm);">로그인 상태 유지</span>
+                        </label>
+                        <a href="#" style="font-size: var(--text-sm); color: var(--primary-600); text-decoration: none;">비밀번호 찾기</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-enterprise btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                        로그인
+                    </button>
+                    
+                    <button type="button" class="btn-enterprise btn-secondary" style="width: 100%;" onclick="toggleAuthMode()">
+                        계정이 없으신가요? 회원가입
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="api-client.js"></script>
+    <script src="app-enterprise.js"></script>
+    <script src="collaboration.js"></script>
+</body>
+</html>

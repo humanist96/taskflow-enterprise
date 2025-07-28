@@ -51,8 +51,14 @@ if (process.env.DATABASE_URL) {
 
 app.use(session(sessionConfig));
 
-// Serve static files in all environments
-app.use(express.static(__dirname));
+// Serve static files
+// In production, Vercel serves from /public directory
+// In development, serve from root directory
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'public')));
+} else {
+    app.use(express.static(__dirname));
+}
 
 // Initialize database schema
 function initializeDatabase() {
