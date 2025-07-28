@@ -3,60 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오늘의 업무 관리</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="refresh" content="0; url=/index-enterprise.html">
+    <title>TaskFlow Enterprise - Loading...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: white;
+        }
+        .loading-container {
+            text-align: center;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: 2rem;
+        }
+        p {
+            margin: 0;
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>오늘의 업무 관리</h1>
-            <p class="date" id="currentDate"></p>
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-link">📊 대시보드 보기</a>
-            </nav>
-        </header>
-
-        <main>
-            <div class="task-input-section">
-                <h2>새 업무 추가</h2>
-                <div class="input-group">
-                    <input type="text" id="taskInput" placeholder="업무 내용을 입력하세요..." />
-                    <select id="prioritySelect">
-                        <option value="low">낮음</option>
-                        <option value="medium" selected>보통</option>
-                        <option value="high">높음</option>
-                    </select>
-                    <button id="addTaskBtn">추가</button>
-                </div>
-            </div>
-
-            <div class="task-stats">
-                <div class="stat">
-                    <span class="stat-label">전체 업무</span>
-                    <span class="stat-value" id="totalTasks">0</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">완료된 업무</span>
-                    <span class="stat-value" id="completedTasks">0</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">남은 업무</span>
-                    <span class="stat-value" id="remainingTasks">0</span>
-                </div>
-            </div>
-
-            <div class="task-list-section">
-                <h2>업무 목록</h2>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all">전체</button>
-                    <button class="filter-btn" data-filter="active">진행중</button>
-                    <button class="filter-btn" data-filter="completed">완료</button>
-                </div>
-                <ul id="taskList" class="task-list"></ul>
-            </div>
-        </main>
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <h1>TaskFlow Enterprise</h1>
+        <p>로딩 중...</p>
     </div>
-
-    <script src="script.js"></script>
+    <script>
+        // 즉시 리다이렉트
+        window.location.replace('/index-enterprise.html');
+    </script>
 </body>
 </html>
