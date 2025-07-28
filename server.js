@@ -51,13 +51,11 @@ if (process.env.DATABASE_URL) {
 
 app.use(session(sessionConfig));
 
-// Static files
-app.use(express.static(__dirname));
-
-// Main route - serve the enterprise HTML file
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index-enterprise.html'));
-});
+// In production, Vercel will serve static files directly
+// In development, serve static files
+if (process.env.NODE_ENV !== 'production') {
+    app.use(express.static(__dirname));
+}
 
 // Initialize database schema
 function initializeDatabase() {
