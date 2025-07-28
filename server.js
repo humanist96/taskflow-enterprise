@@ -54,6 +54,11 @@ app.use(session(sessionConfig));
 // Static files
 app.use(express.static(__dirname));
 
+// Main route - serve the enterprise HTML file
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index-enterprise.html'));
+});
+
 // Initialize database schema
 function initializeDatabase() {
     const schemaFile = process.env.DATABASE_URL ? 'schema-pg.sql' : 'schema.sql';
