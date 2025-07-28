@@ -51,11 +51,8 @@ if (process.env.DATABASE_URL) {
 
 app.use(session(sessionConfig));
 
-// In production, Vercel will serve static files directly
-// In development, serve static files
-if (process.env.NODE_ENV !== 'production') {
-    app.use(express.static(__dirname));
-}
+// Serve static files in all environments
+app.use(express.static(__dirname));
 
 // Initialize database schema
 function initializeDatabase() {
@@ -665,6 +662,25 @@ app.get('/api/tags', requireAuth, (req, res) => {
             res.json(tags);
         }
     );
+});
+
+// Root route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Catch-all route for client-side routing
+// This must be the last route
+app.get('*', (req, res) => {
+    const filePath = path.join(__dirname, req.path);
+    
+    // Check if the requested file exists
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        res.sendFile(filePath);
+    } else {
+        // Default to index.html for client-side routing
+        res.sendFile(path.join(__dirname, 'index.html'));
+    }
 });
 
 // Start server
